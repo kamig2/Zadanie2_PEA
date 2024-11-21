@@ -8,182 +8,51 @@
 
 using namespace std;
 
-BAndBBFS::~BAndBBFS() {
-    if (bestNode != nullptr) {
-        delete bestNode; // Zwalniamy pamięć najlepszego węzła
-    }
-}
-
-/*Result BAndBBFS::branchAndBound(int** dist, int N, int start) {
-    Queue queue;
-    queue.init(1000);  // Inicjalizujemy kolejkę dla 1000 elementów
-
-    int bestCost = INT_MAX;
-    Node* bestNode = nullptr;
-
-    Node* root = new Node(N);  // Alokacja dynamiczna dla korzenia
-    root->path[0] = start;  // Zaczynamy od miasta start
-    root->cost = 0;
-    root->level = 0;
-    root->bound = BoundCalculator::calculateBound(root, dist, N);
-
-//    cout << "Root node created: " << root << ", bound: " << root->bound << endl;
-
-    queue.enqueue(root);
-
-    while (!queue.isEmpty()) {
-        Node* current = queue.dequeue();
-
-//        cout << "Pobieranie węzła z kolejki: " << current << ", level: " << current->level << ", cost: " << current->cost << ", bound: " << current->bound << endl;
-
-        // Jeśli jesteśmy na ostatnim poziomie, sprawdzamy rozwiązanie
-        if (current->level == N - 1) {
-            int last_to_start = dist[current->path[current->level]][0]; // Powrót do miasta 0
-            int total_cost = current->cost + last_to_start;
-
-//            cout << "Sprawdzanie rozwiązania, total_cost: " << total_cost << endl;
-
-            if (total_cost < bestCost) {
-                bestCost = total_cost;
-                if (bestNode != nullptr) {
-//                    cout << "Zwalnianie pamięci poprzedniego najlepszego węzła: " << bestNode << endl;
-                    delete bestNode;  // Zwalniamy pamięć poprzedniego najlepszego węzła
-                }
-                bestNode = current;  // Zapisujemy nowy najlepszy węzeł
-//                cout << "Aktualizacja najlepszego węzła: " << bestNode << ", koszt: " << bestCost << endl;
-            } else {
-//                cout << "Odrzucenie węzła: " << current << " z kosztami większymi niż najlepszy: " << total_cost << endl;
-                delete current;  // Zwalniamy pamięć niewykorzystanego węzła
-                current = nullptr;
-            }
-            continue;
-        }
-
-        // Rozwijanie dzieci węzła
-        for (int i = 0; i < N; i++) {
-            bool alreadyVisited = false;
-
-            // Sprawdź, czy miasto już zostało odwiedzone
-            for (int j = 0; j <= current->level; j++) {
-                if (current->path[j] == i) {
-                    alreadyVisited = true;
-                    break;
-                }
-            }
-
-//            cout << "Rozważanie miasta " << i << ", już odwiedzone? " << (alreadyVisited ? "Tak" : "Nie") << endl;
-
-            if (!alreadyVisited && current->level < N - 1) {
-                Node* child = new Node(N);  // Dynamicznie alokujemy nowy węzeł
-                for (int j = 0; j <= current->level; j++) {
-                    child->path[j] = current->path[j];  // Kopiujemy dotychczasową ścieżkę
-                }
-                child->level = current->level + 1;
-                child->path[child->level] = i;
-
-//                cout << "Tworzenie dziecka: " << child << " z level: " << child->level << endl;
-
-                // Sprawdzamy, czy indeksy są w zakresie
-                if (current->path[current->level] >= N || i >= N) {
-//                    cout << "Dziecko " << child << " ma niepoprawne indeksy, pomijamy." << endl;
-                    delete child;
-                    continue;  // Pomijamy ten węzeł, jeśli indeksy są poza zakresem
-                }
-
-                child->cost = current->cost + dist[current->path[current->level]][i];
-//                cout<<"cost: "<< child->cost<<endl;
-                child->bound = BoundCalculator::calculateBound(child, dist, N);
-
-//                cout << "Obliczono koszt dla dziecka: " << child->cost << ", bound: " << child->bound << endl;
-
-                // Jeśli ograniczenie jest mniejsze niż najlepszy koszt, dodajemy do kolejki
-                if (child->bound < bestCost) {
-//                    cout << "Dziecko " << child << " dodane do kolejki." << endl;
-                    queue.enqueue(child);
-                } else {
-//                    cout << "Dziecko " << child << " odrzucone z powodu złego bound." << endl;
-                    delete child;  // Zwalniamy pamięć węzła, jeśli nie spełnia warunku
-                }
-            }
-        }
-
-//        cout << "Zwalnianie pamięci przetworzonego węzła: " << current << endl;
-        delete current;  // Zwalniamy pamięć przetworzonego węzła
-    }
-
-    Result result;
-    result.cost = bestCost;
-
-    if (bestNode != nullptr) {
-        result.path = new int[N + 1];  // Alokacja dla ścieżki z powrotem do miasta 0
-        for (int i = 0; i <= bestNode->level; i++) {
-            result.path[i] = bestNode->path[i];  // Kopiujemy najlepszą ścieżkę
-        }
-        result.path[bestNode->level + 1] = 0;  // Dodajemy powrót do miasta 0
-//        cout << "Najlepsza ścieżka została skopiowana. Zwalniamy pamięć najlepszego węzła." << endl;
-        delete bestNode;  // Usuwamy bestNode po skopiowaniu ścieżki
-    } else {
-        result.path = nullptr;  // Jeśli nie znaleziono ścieżki
-    }
-
-//    cout << "Zwracamy wynik. Minimalny koszt: " << result.cost << endl;
-    return result;  // Zwracamy wynik
-}
-
-Result BAndBBFS::startFromEachVertex(int **dist, int N) {
-    Result bestResult;
-    bestResult.cost = INT_MAX;
-    for(int i = 0;i<N;i++){
-        Result currentResult = branchAndBound(dist,N,i);
-        if (currentResult.cost<bestResult.cost){
-            bestResult.cost = currentResult.cost;
-            bestResult.path = currentResult.path;
-        }
-    }
-    return bestResult;
-}*/
-
+// Główna funkcja implementująca algorytm Branch and Bound
 Result BAndBBFS::branchAndBound(int** dist, int N, int start) {
     Queue queue;
     queue.init(1000);  // Inicjalizujemy kolejkę dla 1000 elementów
 
-    int bestCost = INT_MAX;
-    Node* bestNode = nullptr;
+    int bestCost = INT_MAX;  // Początkowo najlepszy koszt ustawiamy na nieskończoność
+    Node* bestNode = nullptr;  // Wskaźnik na najlepszy węzeł, początkowo pusty
 
-    Node* root = new Node(N);  // Alokacja dynamiczna dla korzenia
-    root->path[0] = start;  // Zaczynamy od miasta start
-    root->cost = 0;
-    root->level = 0;
-    root->bound = BoundCalculator::calculateBound(root, dist, N);
+    // Tworzymy i inicjalizujemy węzeł korzenia
+    Node* root = new Node(N);  // Dynamicznie alokujemy pamięć dla korzenia
+    root->path[0] = start;  // Rozpoczynamy trasę od podanego miasta startowego
+    root->cost = 0;  // Koszt początkowy to 0
+    root->level = 0;  // Korzeń jest na poziomie 0
+    root->bound = BoundCalculator::calculateBound(root, dist, N);  // Obliczamy ograniczenie dolne dla korzenia
 
-    queue.enqueue(root);
+    queue.enqueue(root);  // Dodajemy korzeń do kolejki
 
+    // Pętla wykonująca przeszukiwanie drzewa
     while (!queue.isEmpty()) {
-        Node* current = queue.dequeue();
+        Node* current = queue.dequeue();  // Pobieramy następny węzeł do przetworzenia z kolejki
 
-        // Jeśli jesteśmy na ostatnim poziomie, sprawdzamy rozwiązanie
+        // Jeśli jesteśmy na ostatnim poziomie drzewa, sprawdzamy pełne rozwiązanie
         if (current->level == N - 1) {
-            int last_to_start = dist[current->path[current->level]][start]; // Powrót do miasta start
-            int total_cost = current->cost + last_to_start;
+            int lastToStart = dist[current->path[current->level]][start]; // Koszt powrotu do miasta początkowego
+            int totalCost = current->cost + lastToStart;
 
-            if (total_cost < bestCost) {
-                bestCost = total_cost;
+            // Jeśli całkowity koszt jest lepszy, aktualizujemy najlepsze rozwiązanie
+            if (totalCost < bestCost) {
+                bestCost = totalCost;
                 if (bestNode != nullptr) {
                     delete bestNode;  // Zwalniamy pamięć poprzedniego najlepszego węzła
                 }
-                bestNode = current;  // Zapisujemy nowy najlepszy węzeł
+                bestNode = current;  // Ustawiamy obecny węzeł jako najlepszy
             } else {
-                delete current;  // Zwalniamy pamięć niewykorzystanego węzła
+                delete current;  // Zwalniamy pamięć węzła, jeśli nie jest najlepszy
                 current = nullptr;
             }
-            continue;
+            continue;  // Przechodzimy do kolejnej iteracji
         }
 
-        // Rozwijanie dzieci węzła
+        // Rozwijamy dzieci bieżącego węzła
         for (int i = 0; i < N; i++) {
             bool alreadyVisited = false;
 
-            // Sprawdź, czy miasto już zostało odwiedzone
+            // Sprawdzamy, czy miasto `i` już zostało odwiedzone w bieżącej ścieżce
             for (int j = 0; j <= current->level; j++) {
                 if (current->path[j] == i) {
                     alreadyVisited = true;
@@ -192,58 +61,64 @@ Result BAndBBFS::branchAndBound(int** dist, int N, int start) {
             }
 
             if (!alreadyVisited && current->level < N - 1) {
-                Node* child = new Node(N);  // Dynamicznie alokujemy nowy węzeł
+                // Tworzymy nowe dziecko dynamicznie
+                Node* child = new Node(N);
                 for (int j = 0; j <= current->level; j++) {
-                    child->path[j] = current->path[j];  // Kopiujemy dotychczasową ścieżkę
+                    child->path[j] = current->path[j];  // Kopiujemy bieżącą ścieżkę do dziecka
                 }
-                child->level = current->level + 1;
-                child->path[child->level] = i;
+                child->level = current->level + 1;  // Zwiększamy poziom o 1
+                child->path[child->level] = i;  // Dodajemy miasto `i` do ścieżki
 
                 // Sprawdzamy, czy indeksy są w zakresie
                 if (current->path[current->level] >= N || i >= N) {
-                    delete child;
-                    continue;  // Pomijamy ten węzeł, jeśli indeksy są poza zakresem
+                    delete child;  // Zwalniamy pamięć, jeśli indeksy są poza zakresem
+                    continue;  // Pomijamy ten węzeł
                 }
 
+                // Obliczamy koszt i ograniczenie dla dziecka
                 child->cost = current->cost + dist[current->path[current->level]][i];
                 child->bound = BoundCalculator::calculateBound(child, dist, N);
 
-                // Jeśli ograniczenie jest mniejsze niż najlepszy koszt, dodajemy do kolejki
+                // Jeśli ograniczenie dziecka jest obiecujące, dodajemy je do kolejki
                 if (child->bound < bestCost) {
                     queue.enqueue(child);
                 } else {
-                    delete child;  // Zwalniamy pamięć węzła, jeśli nie spełnia warunku
+                    delete child;  // Zwalniamy pamięć, jeśli węzeł nie spełnia warunku
                 }
             }
         }
         delete current;  // Zwalniamy pamięć przetworzonego węzła
     }
 
+    // Przygotowujemy wynik
     Result result;
     result.cost = bestCost;
 
     if (bestNode != nullptr) {
-        result.path = new int[N + 1];  // Alokacja dla ścieżki z powrotem do miasta start
+        result.path = new int[N + 1];  // Alokujemy pamięć na ścieżkę, włącznie z powrotem do miasta startowego
         for (int i = 0; i <= bestNode->level; i++) {
             result.path[i] = bestNode->path[i];  // Kopiujemy najlepszą ścieżkę
         }
-        result.path[bestNode->level + 1] = start;  // Dodajemy powrót do miasta start
-        delete bestNode;  // Usuwamy bestNode po skopiowaniu ścieżki
+        result.path[bestNode->level + 1] = start;  // Dodajemy powrót do miasta początkowego
+        delete bestNode;  // Zwalniamy pamięć najlepszego węzła
     } else {
-        result.path = nullptr;  // Jeśli nie znaleziono ścieżki
+        result.path = nullptr;  // Jeśli nie znaleziono rozwiązania, ścieżka jest pusta
     }
 
     return result;  // Zwracamy wynik
 }
 
+// Funkcja uruchamiająca algorytm dla każdego miasta jako punktu startowego
 Result BAndBBFS::startFromEachVertex(int **dist, int N) {
     Result bestResult;
     bestResult.cost = INT_MAX;
     bestResult.path = nullptr;
 
+    // Iterujemy po wszystkich miastach jako punktach startowych
     for (int i = 0; i < N; i++) {
         Result currentResult = branchAndBound(dist, N, i);
 
+        // Jeśli obecny wynik jest lepszy, aktualizujemy najlepszy wynik
         if (currentResult.cost < bestResult.cost) {
             if (bestResult.path != nullptr) {
                 delete[] bestResult.path;  // Zwalniamy pamięć poprzedniej najlepszej ścieżki
@@ -251,10 +126,10 @@ Result BAndBBFS::startFromEachVertex(int **dist, int N) {
             bestResult.cost = currentResult.cost;
             bestResult.path = currentResult.path;
         } else {
-            delete[] currentResult.path;  // Zwalniamy pamięć ścieżki, jeśli nie jest najlepsza
+            delete[] currentResult.path;  // Zwalniamy pamięć, jeśli ścieżka nie jest najlepsza
         }
     }
-    return bestResult;
+    return bestResult;  // Zwracamy najlepszy wynik
 }
 
 

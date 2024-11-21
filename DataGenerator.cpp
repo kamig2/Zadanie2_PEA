@@ -36,12 +36,6 @@ void DataGenerator::generate(int r, std::vector<int> sizeVertex) {
             freeMatrix(matrix, i); // Zwalniamy pamięć po każdym użyciu macierzy
         }
 
-        /*saveToCsvFile("bruteForce.csv", bbDfsTimeAsym, i);
-        saveToCsvFile("nearestNeighbour.csv", bbLCTimeAsym, i);
-        saveToCsvFile("randomAlgorithm.csv", bbBfsTimeAsym, i);
-        saveToCsvFile("bruteForceSym.csv", bbDfsTimeSym, i);
-        saveToCsvFile("nearestNeighbourSym.csv", bbLCTimeSym, i);
-        saveToCsvFile("randomAlgorithmSym.csv", bbBfsTimeSym, i);*/
     }
 }
 

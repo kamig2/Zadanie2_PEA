@@ -11,16 +11,9 @@
 #include "../Structurs/Result.h"
 
 class BAndBDFS {
-private:
-    Node* bestNode;  // Wskaźnik do najlepszego węzła
-    int bestCost;    // Najlepszy koszt
 public:
-    BAndBDFS() : bestNode(nullptr), bestCost(INT_MAX) {} // Inicjalizacja
-    ~BAndBDFS(); // Destruktor
-    // Algorytm Branch and Bound rozwiązujący problem komiwojażera
     Result branchAndBound(int** dist, int N, int start);
     Result startFromEachVertex(int** dist, int N);
-//    int branchAndBound(int** dist, int N,int*& bestPath);
 };
 
 

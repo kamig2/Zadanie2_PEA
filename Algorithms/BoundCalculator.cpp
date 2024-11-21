@@ -3,55 +3,40 @@
 //
 
 #include <climits>
-#include <algorithm>
 #include <iostream>
 #include "BoundCalculator.h"
-#include "../Structurs/Result.h"
+
 
 using namespace std;
 
+// Funkcja oblicza dolne ograniczenie (bound) kosztu dla danego węzła
 int BoundCalculator::calculateBound(Node *node, int **dist, int N) {
-    int bound = node->cost;
+    int bound = node->cost;  // Początkowe ograniczenie to koszt trasy w aktualnym węźle
     bool* visited = new bool[N];  // Alokujemy dynamicznie tablicę odwiedzin
-    for (int i = 0; i < N; i++) visited[i] = false;
+    for (int i = 0; i < N; i++) visited[i] = false;  // Ustawiamy wszystkie miasta jako nieodwiedzone
 
-    // Oznacz miasta już odwiedzone
+    // Oznacz miasta, które już znajdują się na trasie
     for (int i = 0; i <= node->level; i++) {
-        visited[node->path[i]] = true;
+        visited[node->path[i]] = true;  // Miasta na ścieżce oznaczamy jako odwiedzone
     }
 
-    // Dodaj minimalny koszt krawędzi wychodzących z nieodwiedzonych miast
+    // Przeglądaj wszystkie nieodwiedzone miasta
     for (int i = 0; i < N; i++) {
-        if (!visited[i]) {
-            int min_cost = INT_MAX;
+        if (!visited[i]) {  // Jeśli miasto `i` nie zostało odwiedzone
+            int min_cost = INT_MAX;  // Inicjalizujemy minimalny koszt jako nieskończoność
             for (int j = 0; j < N; j++) {
-                if (i != j && !visited[j]) {
-                    min_cost = min(min_cost, dist[i][j]);
+                if (i != j && !visited[j]) {  // Jeśli `j` jest inne niż `i` i nieodwiedzone
+                    min_cost = min(min_cost, dist[i][j]);  // Znajdujemy minimalny koszt przejścia z `i` do `j`
                 }
             }
-            if(min_cost == INT_MAX){
+            if (min_cost == INT_MAX) {  // Jeśli nie znaleziono kosztu, ustawiamy 0
                 min_cost = 0;
             }
-            bound += min_cost;
+            bound += min_cost;  // Dodajemy minimalny koszt do ograniczenia
         }
     }
 
-    delete[] visited;  // Zwalniamy pamięć tablicy odwiedzin
-    return bound;
+    delete[] visited;
+    return bound;  // Zwracamy obliczone ograniczenie
 }
 
-//void BoundCalculator::printSolution(const Result& result, int size) {
-//    if (result.path != nullptr) {
-//        cout << "Najlepsza trasa: ";
-//
-//        // Używamy size do iterowania po ścieżce
-//        for (int i = 0; i < size; i++) {
-//            cout << result.path[i] << " -> ";
-//        }
-//
-//        cout << result.path[0] << endl; // Powrót do miasta startowego
-//        cout << "Minimalny koszt: " << result.cost << endl;
-//    } else {
-//        cout << "Brak znalezionego rozwiązania." << endl;
-//    }
-//}

@@ -12,7 +12,6 @@
 class BoundCalculator {
 public:
     static int  calculateBound(Node* node, int** dist, int N);
-//    static void printSolution(const Result& result, int size);
 
 };
 

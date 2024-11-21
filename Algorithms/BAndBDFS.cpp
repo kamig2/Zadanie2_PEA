@@ -8,82 +8,79 @@
 #include "../Structurs/Stack.h"
 
 using namespace std;
-BAndBDFS::~BAndBDFS() {
-    if (bestNode != nullptr) {
-        delete bestNode; // Zwalniamy pamięć najlepszego węzła
-    }
-}
-
 Result BAndBDFS::branchAndBound(int** dist, int N, int start) {
-    Stack stack;
-    stack.init(1000);
+    Stack stack;  // Tworzymy stos do implementacji DFS
+    stack.init(1000);  // Inicjalizujemy stos z maksymalnym rozmiarem 1000 elementów
 
-    int bestCost = INT_MAX;
-    Node* bestNode = nullptr;
+    int bestCost = INT_MAX;// Początkowo najlepszy koszt ustawiamy na nieskończoność
+    Node* bestNode = nullptr;  // Wskaźnik na najlepszy węzeł, początkowo pusty
 
+    // Tworzymy korzeń drzewa
     Node* root = new Node(N);
-    root->path[0] = start;  // Ustawiamy startowy wierzchołek
-    root->cost = 0;
-    root->level = 0;
-    root->bound = BoundCalculator::calculateBound(root, dist, N);
+    root->path[0] = start;  // Ustawiamy wierzchołek początkowy
+    root->cost = 0;         // Koszt początkowy to 0
+    root->level = 0;        // Poziom korzenia to 0
+    root->bound = BoundCalculator::calculateBound(root, dist, N);  // Obliczamy dolne ograniczenie
 
-    stack.push(root); // Dodajemy korzeń na stos
+    stack.push(root);  // Dodajemy korzeń na stos
 
-    while (!stack.isEmpty()) {
+    while (!stack.isEmpty()) {  // Przeszukiwanie w głąb dopóki stos nie jest pusty
         Node* current = stack.pop();  // Pobieramy węzeł ze stosu
 
-        // Jeśli jesteśmy na ostatnim poziomie, sprawdzamy rozwiązanie
+        // Sprawdzenie, czy osiągnęliśmy ostatni poziom (pełna ścieżka)
         if (current->level == N - 1) {
-            int last_to_start = dist[current->path[current->level]][start]; // Powrót do miasta 0
-            int total_cost = current->cost + last_to_start;
+            int lastToStart = dist[current->path[current->level]][start];  // Koszt powrotu do miasta początkowego
+            int totalCost = current->cost + lastToStart;  // Całkowity koszt ścieżki
 
-            if (total_cost < bestCost) {
-                bestCost = total_cost;
+            // Aktualizujemy najlepszy koszt, jeśli znaleziono lepsze rozwiązanie
+            if (totalCost < bestCost) {
+                bestCost = totalCost;  // Aktualizacja najlepszego kosztu
                 if (bestNode != nullptr) {
                     delete bestNode;  // Zwalniamy pamięć poprzedniego najlepszego węzła
                 }
                 bestNode = current;  // Zapisujemy nowy najlepszy węzeł
             } else {
-                delete current;  // Zwalniamy pamięć niewykorzystanego węzła
+                delete current;  // Zwalniamy pamięć, jeśli węzeł nie jest potrzebny
                 current = nullptr;
             }
-            continue;
+            continue;  // Przechodzimy do następnej iteracji
         }
 
-        // Rozwijanie dzieci węzła
+        // Rozwijamy dzieci węzła (odwiedzamy kolejne miasta)
         for (int i = 0; i < N; i++) {
             bool alreadyVisited = false;
 
-            // Sprawdź, czy miasto już zostało odwiedzone
+            // Sprawdzamy, czy miasto `i` zostało już odwiedzone
             for (int j = 0; j <= current->level; j++) {
-                if (current->path[j] == i) {
+                if (current->path[j] == i) {  // Jeśli miasto `i` jest na ścieżce
                     alreadyVisited = true;
                     break;
                 }
             }
 
-            if (!alreadyVisited && current->level < N - 1) {
-                Node* child = new Node(N);  // Dynamicznie alokujemy nowy węzeł
+            if (!alreadyVisited && current->level < N - 1) {  // Jeśli miasto nie zostało odwiedzone
+                Node* child = new Node(N);  // Tworzymy nowy węzeł dziecka
                 for (int j = 0; j <= current->level; j++) {
                     child->path[j] = current->path[j];  // Kopiujemy dotychczasową ścieżkę
                 }
-                child->level = current->level + 1;
-                child->path[child->level] = i;
+                child->level = current->level + 1;  // Zwiększamy poziom dziecka
+                child->path[child->level] = i;     // Dodajemy miasto `i` do ścieżki
 
-                // Sprawdzamy, czy indeksy są w zakresie
+                // Sprawdzamy poprawność indeksów
                 if (current->path[current->level] >= N || i >= N) {
-                    delete child;
-                    continue;  // Pomijamy ten węzeł, jeśli indeksy są poza zakresem
+                    delete child;  // Zwalniamy pamięć węzła, jeśli indeksy są niepoprawne
+                    continue;  // Przechodzimy do kolejnego miasta
                 }
 
+                // Obliczamy koszt i ograniczenie dla dziecka
                 child->cost = current->cost + dist[current->path[current->level]][i];
                 child->bound = BoundCalculator::calculateBound(child, dist, N);
 
-                // Jeśli ograniczenie jest mniejsze niż najlepszy koszt, dodajemy do stosu
+                // Dodajemy dziecko na stos, jeśli ograniczenie jest obiecujące
                 if (child->bound < bestCost) {
                     stack.push(child);
                 } else {
-                    delete child;  // Zwalniamy pamięć węzła, jeśli nie spełnia warunku
+                    delete child;  // Zwalniamy pamięć dziecka, jeśli nie spełnia warunku
                 }
             }
         }
@@ -91,21 +88,22 @@ Result BAndBDFS::branchAndBound(int** dist, int N, int start) {
         delete current;  // Zwalniamy pamięć przetworzonego węzła
     }
 
+    // Przygotowanie wyniku końcowego
     Result result;
     result.cost = bestCost;
 
-    if (bestNode != nullptr) {
-        result.path = new int[N + 1];  // Alokacja dla ścieżki z powrotem do miasta 0
+    if (bestNode != nullptr) {  // Jeśli znaleziono najlepszy węzeł
+        result.path = new int[N + 1];  // Alokujemy pamięć na pełną trasę
         for (int i = 0; i <= bestNode->level; i++) {
-            result.path[i] = bestNode->path[i];  // Kopiujemy najlepszą ścieżkę
+            result.path[i] = bestNode->path[i];  // Kopiujemy ścieżkę
         }
-        result.path[bestNode->level + 1] = 0;  // Dodajemy powrót do miasta 0
-        delete bestNode;  // Usuwamy bestNode po skopiowaniu ścieżki
+        result.path[bestNode->level + 1] = start;  // Dodajemy powrót do miasta startowego
+        delete bestNode;  // Zwalniamy pamięć najlepszego węzła
     } else {
-        result.path = nullptr;  // Jeśli nie znaleziono ścieżki
+        result.path = nullptr;  // Jeśli nie znaleziono rozwiązania
     }
 
-    return result;  // Zwracamy wynik
+    return result;  // Zwracamy najlepszy wynik
 }
 
 Result BAndBDFS::startFromEachVertex(int** dist, int N) {
@@ -113,22 +111,25 @@ Result BAndBDFS::startFromEachVertex(int** dist, int N) {
     bestResult.cost = INT_MAX;
     bestResult.path = nullptr;
 
-    // Wywołanie branch and bound dla każdego wierzchołka początkowego
+    // Wywołanie algorytmu dla każdego wierzchołka początkowego
     for (int start = 0; start < N; start++) {
-        Result currentResult = branchAndBound(dist, N, start);  // Wywołanie z wierzchołkiem początkowym `start`
+        Result currentResult = branchAndBound(dist, N, start);  // Rozpoczęcie z wierzchołka `start`
 
-        // Aktualizacja najlepszego wyniku, jeśli znaleziono lepszą trasę
+        // Aktualizacja najlepszego wyniku
         if (currentResult.cost < bestResult.cost) {
-            // Zwalniamy pamięć poprzedniego najlepszego wyniku
-            if (bestResult.path != nullptr) {
+            if (bestResult.path != nullptr) {  // Zwalniamy pamięć poprzedniego wyniku
                 delete[] bestResult.path;
             }
-            bestResult = currentResult;
+            bestResult = currentResult;  // Zapisujemy lepszy wynik
         } else {
-            // Jeśli wynik nie jest lepszy, zwalniamy pamięć dla bieżącej trasy
-            delete[] currentResult.path;
+            delete[] currentResult.path;  // Zwalniamy pamięć ścieżki, jeśli nie jest najlepsza
         }
     }
 
-    return bestResult;
+    return bestResult;  // Zwracamy najlepszy wynik
 }
+
+
+
+
+

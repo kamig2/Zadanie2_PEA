@@ -17,7 +17,7 @@ struct Node {
     Node(int N) : cost(0), level(0), bound(0) {
         path = new int[N];
         for (int i = 0; i < N; i++) {
-            path[i] = -1;  // Inicjalizujemy wszystkie elementy, np. na -1
+            path[i] = -1;  // Inicjalizujemy wszystkie elementy na -1
         }
     }
 
@@ -32,9 +32,8 @@ struct Node {
 
     // Destruktor
     ~Node() {
-//        std::cout << "Destruktor dla Node o adresie " << this << std::endl;
         delete[] path;
-        path = nullptr;  // Ustawienie wskaźnika na nullptr, aby uniknąć podwójnego zwalniania
+        path = nullptr;
     }
 };
 

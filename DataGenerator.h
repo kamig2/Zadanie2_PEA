@@ -13,7 +13,6 @@
 
 class DataGenerator {
 private:
-//    std::vector<int> arr = {12}; // Możesz dodać inne wartości w razie potrzeby
     DataReader dataReader;
     BAndBBFS bbfs;
     BAndBDFS bdfs;
@@ -22,7 +21,7 @@ private:
     // Funkcja zapisująca czas do pliku CSV
     void saveToCsvFile(std::string fileName, long long time, int n);
 
-    // Funkcja obliczająca czas dla algorytmów, teraz z int** matrix
+    // Funkcja obliczająca czas dla algorytmów
     long long calculateTime(int algorithm, int** matrix, int n);
 
     // Funkcja do zwalniania pamięci alokowanej dla int** matrix

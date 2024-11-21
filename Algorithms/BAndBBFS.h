@@ -14,13 +14,7 @@
 
 
 class BAndBBFS {
-private:
-    Node* bestNode;  // Wskaźnik do najlepszego węzła
-    int bestCost;    // Najlepszy koszt
 public:
-    BAndBBFS() : bestNode(nullptr), bestCost(INT_MAX) {} // Inicjalizacja
-    ~BAndBBFS(); // Destruktor
-    // Algorytm Branch and Bound rozwiązujący problem komiwojażera
     Result branchAndBound(int** dist, int N,int start);
     Result startFromEachVertex(int** dist, int N);
 
